@@ -4,9 +4,9 @@ from langchain_community.embeddings import HuggingFaceInferenceAPIEmbeddings
 from typing import List
 from langchain.schema import Document
 import os
+import requests
 
 
-# Load PDF files from a directory
 def load_pdf_file(data):
     loader = DirectoryLoader(
         data,
@@ -17,7 +17,6 @@ def load_pdf_file(data):
     return documents
 
 
-# Filter documents to only keep page_content and metadata
 def filter_to_minimal_docs(docs: List[Document]) -> List[Document]:
     minimal_docs = []
     for doc in docs:
@@ -29,7 +28,6 @@ def filter_to_minimal_docs(docs: List[Document]) -> List[Document]:
     return minimal_docs
 
 
-# Split the documents into text chunks
 def text_split(extracted_data):
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=500,
@@ -39,11 +37,20 @@ def text_split(extracted_data):
     return text_chunks
 
 
-# Use HuggingFace Inference API (no local model = low RAM)
 def download_huggingface_embeddings():
-    from langchain_community.embeddings import HuggingFaceInferenceAPIEmbeddings
+    token = os.environ.get("HUGGINGFACEHUB_API_TOKEN")
+    
+    # Test the token first
+    test_url = "https://api-inference.huggingface.co/pipeline/feature-extraction/sentence-transformers/all-MiniLM-L6-v2"
+    test_response = requests.post(
+        test_url,
+        headers={"Authorization": f"Bearer {token}"},
+        json={"inputs": "test", "options": {"wait_for_model": True}}
+    )
+    print(f"HuggingFace API status: {test_response.status_code}")
+    print(f"HuggingFace API response: {test_response.text[:200]}")
+    
     embeddings = HuggingFaceInferenceAPIEmbeddings(
-        api_key=os.environ.get("HUGGINGFACEHUB_API_TOKEN"),
+        api_key=token,
         model_name="sentence-transformers/all-MiniLM-L6-v2"
     )
-    return embeddings
