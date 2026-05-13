@@ -41,6 +41,7 @@ def text_split(extracted_data):
 
 # Use HuggingFace Inference API (no local model = low RAM)
 def download_huggingface_embeddings():
+    from langchain_community.embeddings import HuggingFaceInferenceAPIEmbeddings
     embeddings = HuggingFaceInferenceAPIEmbeddings(
         api_key=os.environ.get("HUGGINGFACEHUB_API_TOKEN"),
         model_name="sentence-transformers/all-MiniLM-L6-v2"
