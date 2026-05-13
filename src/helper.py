@@ -1,8 +1,9 @@
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.embeddings import HuggingFaceInferenceAPIEmbeddings
 from typing import List
 from langchain.schema import Document
+import os
 
 
 # Load PDF files from a directory
@@ -19,7 +20,7 @@ def load_pdf_file(data):
 # Filter documents to only keep page_content and metadata
 def filter_to_minimal_docs(docs: List[Document]) -> List[Document]:
     minimal_docs = []
-    for doc in docs:  # was "documents" (wrong variable name)
+    for doc in docs:
         minimal_doc = Document(
             page_content=doc.page_content,
             metadata=doc.metadata
@@ -38,9 +39,10 @@ def text_split(extracted_data):
     return text_chunks
 
 
-# Download HuggingFace embeddings
+# Use HuggingFace Inference API (no local model = low RAM)
 def download_huggingface_embeddings():
-    embeddings = HuggingFaceEmbeddings(
+    embeddings = HuggingFaceInferenceAPIEmbeddings(
+        api_key=os.environ.get("HUGGINGFACEHUB_API_TOKEN"),
         model_name="sentence-transformers/all-MiniLM-L6-v2"
     )
     return embeddings
